@@ -274,6 +274,31 @@
   display
 }
 
+#let pagelist(pages, render-function) = {
+  let rangeslist = ()
+  let range = ()
+  for p in pages {
+    if range.len() == 0 or p.page-counter == range.last().page-counter+1 {
+      range.push(p)
+    } else {
+      rangeslist.push(range)
+      range=(p,)
+    }
+  }
+  rangeslist.push(range)
+  let renderlist = ()
+  for r in rangeslist {
+    if (r.len() > 2) {
+      renderlist.push(render-function(r.first())+"-"+render-function(r.last()))
+    } else if r.len() > 1  {
+      renderlist.push(render-function(r.first())+" f.")
+    } else {
+      renderlist.push(render-function(r.first()))
+    }
+  }
+  renderlist.join(", ")
+}
+
 // Internal function to format a plain or nested entry
 #let render-entry(idx, entry, lvl, use-page-counter, sort-order, entry-casing) = {
   let pages = entry.at("pages", default: ())
@@ -284,7 +309,7 @@
       display,
       entry-casing,
       entry.at("apply-casing", default: auto),
-    )#box(width: 1fr)#pages.map(render-function).join(", ") \
+    )#box(width: 1fr)#pagelist(pages, render-function) \
   ]
   let sub-entries = entry.at("nested", default: (:))
   let rendered-entries = if sub-entries.keys().len() > 0 [
